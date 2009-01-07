@@ -383,17 +383,21 @@ function! s:process_last_extractor_new_selection( record_number )
     call s:last_extractor.process(record)
 endfunction
 
+function! s:print_error( message )
+    echohl Error | echo '[ 0scan ] '.a:message | echohl None
+endfunction
+
 function! s:process_last_extractor_select_next( shift )
     let records_count = len( s:records_to_print )
     let new_record_number = s:last_selected_result_item_number + a:shift
 
     if new_record_number < 1
-        echohl Error | echo "first record reached" | echohl None
+        call s:print_error( 'first record reached' )
         return
     endif
 
     if new_record_number > records_count
-        echohl Error | echo "last record reached" | echohl None
+        call s:print_error( "last record reached" )
         return
     endif
 
@@ -409,8 +413,116 @@ function! s:process_last_extractor_quick_selection( command )
     endif
 endfunction
 
+function! s:create_extractor( name )
+        let extractor = eval('railmoon#oscan#extractor#'.a:name.'#create()')
+        return extractor
+endfunction
+
+" returns files from dir
+"
+function! s:get_filenames_from_dir( dir )
+    let files_list = split( glob( a:dir."/*" ), "\n" )
+    let result = []
+
+    for item in files_list
+        if filereadable( item )
+            call add( result, item )
+        endif
+    endfor
+
+    return result
+endfunction
+
+" returns list of [ extractor_name, extractor_description, not_implemented_flag ]
+"
+function! s:get_available_extractors()
+    let extractor_files = []
+
+    let vimfiles_folders = split( &runtimepath, ',' )
+    for folder in vimfiles_folders
+        if folder =~ 'after$'
+            continue
+        endif
+
+        let extractor_folder = folder.'/autoload/railmoon/oscan/extractor'
+        call extend( extractor_files, s:get_filenames_from_dir( extractor_folder ) )
+    endfor
+
+    let extractors = []
+
+    for extractor_file in extractor_files
+        "echo extractor_file
+        let extractor_name = fnamemodify( extractor_file, ":t:r" )
+
+        try
+            let extractor = s:create_extractor( extractor_name )
+        catch /.*/
+            continue
+        endtry
+
+        let extractor_description = extractor.description
+        let extractor_not_implemented = has_key( extractor, 'not_implemented' ) ? extractor.not_implemented : 0
+        call add( extractors, [ extractor_name, extractor_description, extractor_not_implemented ] )
+    endfor
+
+    return extractors
+endfunction
+
+function! s:show_available_extractors()
+    let extractors = s:get_available_extractors()
+
+    let max_extractor_name_len = 0
+    for extractor_description in extractors
+        let len = len( extractor_description[0] )
+        if len > max_extractor_name_len
+            let max_extractor_name_len = len
+        endif
+    endfor
+
+    echohl Comment
+    echo "Please specify scan you would like you use"
+    echo ":OScan scan_name [tag1] [tag2]<CR>"
+    echohl None
+    for extractor_description in extractors
+        echohl Keyword | echo printf( "%".max_extractor_name_len."s\t", extractor_description[0] ) 
+
+        if extractor_description[2]
+            echohl Error | echon "[ Not implemented ]" | echohl None | echon " "
+        endif
+
+        echohl String | echon extractor_description[1] | echohl None
+    endfor
+endfunction
+
+" completition function for :OScan command
+"
+function! railmoon#oscan#complete( argLead, cmdLine, cursorPos )
+    let result = ''
+
+    let extractors = s:get_available_extractors()
+
+    for extractor_description in extractors
+        if extractor_description[2]
+            continue
+        endif
+
+        if ! empty( result )
+            let result .= "\n"
+        endif
+
+        let result .= extractor_description[0]
+    endfor
+
+    return result
+endfunction
+
 function! railmoon#oscan#open(...)
 "    call railmoon#trace#start_debug('oscan.debug')
+
+    if empty( a:000 )
+        call s:show_available_extractors()
+        return
+    endif
 
     let extractor_name = a:000[0]
 
@@ -439,19 +551,24 @@ function! railmoon#oscan#open(...)
 
         let s:record_browser = s:last_record_browser
     elseif extractor_name == 'last'
-        echohl Error | echo 'Nothing to repeat' | echohl None 
+        call s:print_error( 'Nothing to repeat' )
         return
     else 
-        let extractor = eval('railmoon#oscan#extractor#'.extractor_name.'#create()')
+        let extractor = {}
+        try
+            let extractor = s:create_extractor( extractor_name )
+        catch /.*/
+            call s:print_error( "Can't create \"".extractor_name."\" scan" )
+            return
+        endtry
+
         let extractor_description = extractor.description
 
         let s:record_browser = railmoon#oscan#record_browser#create(extractor)
     endif
 
     if s:record_browser.is_empty()
-        echohl Error
-        echo 'no records with tags found'
-        echohl None
+        call s:print_error( 'no records with tags found' )
         return
     endif
 
@@ -525,7 +642,7 @@ function! railmoon#oscan#open(...)
         call railmoon#widget#window#select(edit_line_window.id)
         startinsert!
     catch /.*/
-        echohl Error | echo v:exception | echohl None
+        call s:print_error( v:exception )
     finally
         call railmoon#widget#start_handle_autocommands()
         "set nolazyredraw

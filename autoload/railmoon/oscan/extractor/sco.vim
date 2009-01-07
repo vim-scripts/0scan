@@ -17,9 +17,9 @@ function! railmoon#oscan#extractor#sco#create()
     let new_extractor.is_extract_tag_headers = 0 == new_extractor.folded_result_start
 
     if new_extractor.is_extract_tag_headers
-        let new_extractor.description = 'SCO. Select header to move to'
+        let new_extractor.description = 'SourceCodeObedience. Select header to move to'
     else
-        let new_extractor.description = 'SCO. Select result to move to'
+        let new_extractor.description = 'SourceCodeObedience. Select result to move to'
     endif
 
     return new_extractor

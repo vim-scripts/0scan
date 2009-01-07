@@ -1,4 +1,4 @@
-command! -nargs=* OScan :call railmoon#oscan#open(<f-args>)
+command! -nargs=* -complete=custom,railmoon#oscan#complete OScan :call railmoon#oscan#open(<f-args>)
 
 nnoremap <silent> 0t :OScan file<CR>
 nnoremap <silent> 0c :OScan file constructor<CR>

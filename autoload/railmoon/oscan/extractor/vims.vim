@@ -9,7 +9,7 @@ function! railmoon#oscan#extractor#vims#create()
     let new_extractor = copy(s:tag_scan_vim_extractor)
     let new_extractor.last_buffer_number = bufnr('$')
     let new_extractor.buffer_number_width = len(line('$'))
-    let new_extractor.description = 'Select buffer to edit'
+    let new_extractor.description = "Select buffer to edit among all opened Vims"
 
     return new_extractor
 endfunction

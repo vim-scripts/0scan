@@ -12,7 +12,7 @@ function! railmoon#oscan#extractor#taglist_under_cursor#create()
     let new_extractor.file_extension = expand("%:e")
     let new_extractor.filetype = &filetype
     let new_extractor.word_under_cursor = expand('<cword>')
-    let new_extractor.description = 'Go to tag "'.new_extractor.word_under_cursor.'"'
+    let new_extractor.description = 'Jump to tag "'.new_extractor.word_under_cursor.'" according to tags dabase ("set tags=...")'
 
     return new_extractor
 endfunction
