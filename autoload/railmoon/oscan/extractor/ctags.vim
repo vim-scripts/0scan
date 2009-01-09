@@ -18,9 +18,11 @@ function! railmoon#oscan#extractor#ctags#create()
 endfunction
 
 function! railmoon#oscan#extractor#ctags#language_function(language, function_name,...)
+    call railmoon#trace#debug( 'call language_function "'.a:function_name.'" for "'.a:language.'"' )
     try
         let result = eval('railmoon#oscan#extractor#ctags#'.a:language.'#'.a:function_name.'('.join(a:000,',').')')
     catch /.*/
+        call railmoon#trace#debug( 'failed.['.v:exception.'] use cpp' )
         let result = eval('railmoon#oscan#extractor#ctags#cpp#'.a:function_name.'('.join(a:000,',').')')
     endtry
 
@@ -112,7 +114,7 @@ function! s:tag_scan_ctags_extractor.extract()
 endfunction
 
 function! railmoon#oscan#extractor#ctags#colorize_keywords()
-    syntax keyword Type variable inner field enumeration function method 
+    syntax keyword Type variable inner field enumeration function method public private
     syntax keyword Keyword constructor destructor
     syntax keyword Identifier declaration
 endfunction

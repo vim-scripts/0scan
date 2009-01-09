@@ -337,10 +337,24 @@ function! s:close_all()
 endfunction
 
 function! s:map_result_moving_keys()
-    inoremap <silent> <buffer> <down> <C-R>=<SID>result_selection_down()?'':''<CR>
-    inoremap <silent> <buffer> <up> <C-R>=<SID>result_selection_up()?'':''<CR>
-    noremap <silent> <buffer> <down> :call <SID>result_selection_down()<CR>
-    noremap <silent> <buffer> <up> :call <SID>result_selection_up()<CR>
+    let result_down_keys = [ '<down>', '<C-n>', '<C-j>' ]
+    let result_up_keys = [ '<up>', '<C-p>', '<C-k>' ]
+
+    for key in result_down_keys
+        let command = 'inoremap <silent> <buffer> '.key.' <C-R>=<SID>result_selection_down()?"":""<CR>'
+        exec command
+        let command = 'noremap <silent> <buffer> '.key.' :call <SID>result_selection_down()<CR>'
+        exec command
+    endfor
+
+    for key in result_up_keys
+        let command = 'inoremap <silent> <buffer> '.key.' <C-R>=<SID>result_selection_up()?"":""<CR>'
+        exec command
+        let command = 'noremap <silent> <buffer> '.key.' :call <SID>result_selection_up()<CR>'
+        exec command
+    endfor
+
+    inoremap <silent> <buffer> <C-p> <C-R>=<SID>result_selection_up()?'':''<CR>
     inoremap <silent> <buffer> <cr> <C-R>=<SID>result_select()?' ':' '<CR>
 endfunction
 
@@ -517,7 +531,7 @@ function! railmoon#oscan#complete( argLead, cmdLine, cursorPos )
 endfunction
 
 function! railmoon#oscan#open(...)
-"    call railmoon#trace#start_debug('oscan.debug')
+    "call railmoon#trace#start_debug('oscan.debug')
 
     if empty( a:000 )
         call s:show_available_extractors()
