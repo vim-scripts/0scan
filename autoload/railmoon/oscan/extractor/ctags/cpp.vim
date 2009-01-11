@@ -10,6 +10,12 @@ function! railmoon#oscan#extractor#ctags#cpp#kinds()
     return "cdefgmnpstuvx"
 endfunction
 
+function! railmoon#oscan#extractor#ctags#cpp#colorize()
+    syntax keyword Type variable inner field enumeration function method public private
+    syntax keyword Keyword constructor destructor
+    syntax keyword Identifier declaration
+endfunction
+
 function! railmoon#oscan#extractor#ctags#cpp#record( tag_item )
     let tag_list = []
     let header = ""

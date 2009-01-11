@@ -10,6 +10,10 @@ function! railmoon#oscan#extractor#ctags#vim#kinds()
     return "afk"
 endfunction
 
+function! railmoon#oscan#extractor#ctags#vim#colorize()
+    syntax keyword Type function variable autogroup
+endfunction
+
 function! railmoon#oscan#extractor#ctags#vim#record( tag_item )
     let tag_list = []
     let header = ""

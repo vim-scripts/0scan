@@ -75,25 +75,48 @@ let s:plugin_window_goes_close = 0
 let s:common_widget_callback = {}
 
 function! s:common_widget_callback.on_close()
-    call railmoon#trace#debug('common_widget_callback.on_close')
+    call railmoon#trace#push('common_widget_callback.on_close')
+    try
 
-    let s:plugin_window_goes_close = 1
+        let s:plugin_window_goes_close = 1
 
-    call s:turnon_unexpected_plugins()
-    tabclose
-    call railmoon#widget#window#load_selected(s:plugin_invoker_position)
+        call s:turnon_unexpected_plugins()
+
+        call railmoon#trace#debug('tabclose')
+        tabclose
+
+        call railmoon#widget#window#load_selected(s:plugin_invoker_position)
+
+    finally
+        call railmoon#trace#debug('...')
+        call railmoon#trace#pop()
+    endtry
 endfunction
 
 function! s:common_widget_callback.on_tab_leave()
-    if ! s:plugin_window_goes_close
-        call s:turnon_unexpected_plugins()
-        tabclose " TODO make sure we close right tabpage
-        let s:plugin_window_goes_close = 0
-    endif
+    call railmoon#trace#push('common_widget_callback.on_tab_leave')
+    try
+
+        call railmoon#trace#debug('leaving tab')
+        if ! s:plugin_window_goes_close
+            let s:plugin_window_goes_close = 1
+            call s:turnon_unexpected_plugins()
+            tabclose " TODO make sure we close right tabpage
+        endif
+
+    finally
+        call railmoon#trace#debug('...')
+        call railmoon#trace#pop()
+    endtry
 endfunction
 
 function! s:common_widget_callback.on_close_with_tab_page()
-    call railmoon#trace#debug('common_widget_callback.on_close_with_tab_page')
+    call railmoon#trace#push('common_widget_callback.on_close_with_tab_page')
+    try
+    finally
+        call railmoon#trace#debug('...')
+        call railmoon#trace#pop()
+    endtry
 endfunction
 
 let s:suggestion_window_callback = copy(s:common_widget_callback)
@@ -382,12 +405,14 @@ function! s:turnoff_unexpected_plugins()
     endif
 
     if exists('g:loaded_autocomplpop')
+        call railmoon#trace#debug('Turn off autocomplpop.vim')
         AutoComplPopLock
     endif
 endfunction
 
 function! s:turnon_unexpected_plugins()
     if exists('g:loaded_autocomplpop')
+        call railmoon#trace#debug('Turn on autocomplpop.vim')
         AutoComplPopUnlock
     endif
 endfunction
@@ -594,6 +619,8 @@ function! railmoon#oscan#open(...)
     try
         "set lazyredraw
         silent tab help
+
+        let s:plugin_window_goes_close = 0
 
         call railmoon#widget#stop_handle_autocommands()
         call s:turnoff_unexpected_plugins()

@@ -10,6 +10,11 @@ function! railmoon#oscan#extractor#ctags#python#kinds()
     return "cfm"
 endfunction
 
+function! railmoon#oscan#extractor#ctags#python#colorize()
+    syntax keyword Type class function method inner public private
+    syntax keyword Keyword constructor method
+endfunction
+
 function! railmoon#oscan#extractor#ctags#python#record( tag_item )
     let tag_list = []
     let header = ""

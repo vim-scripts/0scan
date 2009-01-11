@@ -29,6 +29,10 @@ function! railmoon#oscan#extractor#ctags#language_function(language, function_na
     return result
 endfunction
 
+function! railmoon#oscan#extractor#ctags#colorize_for_langauge(language)
+    call railmoon#oscan#extractor#ctags#language_function(a:language, 'colorize')
+endfunction
+
 " by language name return kinds to use while ctags build tags base
 " default language c++
 function! railmoon#oscan#extractor#ctags#kind_types_for_langauge(language)
@@ -40,7 +44,7 @@ function! railmoon#oscan#extractor#ctags#process(tag_item)
         let previous_magic = &magic
         set nomagic
 
-        exec 'edit +'.escape(a:tag_item.cmd, ' ').' '.a:tag_item.filename
+        exec a:tag_item.cmd
     finally
         let &magic = previous_magic
     endtry
@@ -114,12 +118,9 @@ function! s:tag_scan_ctags_extractor.extract()
 endfunction
 
 function! railmoon#oscan#extractor#ctags#colorize_keywords()
-    syntax keyword Type variable inner field enumeration function method public private
-    syntax keyword Keyword constructor destructor
-    syntax keyword Identifier declaration
 endfunction
 
 function! s:tag_scan_ctags_extractor.colorize()
     let &filetype = self.filetype
-    call railmoon#oscan#extractor#ctags#colorize_keywords()
+    call railmoon#oscan#extractor#ctags#colorize_for_langauge(self.language)
 endfunction
