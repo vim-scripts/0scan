@@ -38,9 +38,16 @@ function! s:tag_scan_paste_extractor.extract()
 
         let tags = railmoon#oscan#extractor#util#tags_from_line(register_value)
 
-        let additional_data = register_name
+        let register_value_list = split( register_value, "\n" )
+        let shortened_value_list = register_value_list
+        if len( register_value_list ) > 5
+            let shortened_value_list = register_value_list[0:2]
+            call add(shortened_value_list, "... more ...")
+            call extend(shortened_value_list, register_value_list[-2:-1])
+        endif
 
-        let header = split(register_value, "\n")
+        let additional_data = register_name
+        let header = shortened_value_list
 
         if empty(header)
             continue
@@ -57,5 +64,6 @@ function! s:tag_scan_paste_extractor.extract()
 endfunction
 
 function! s:tag_scan_paste_extractor.colorize()
+    syn match Identifier /\.\.\. more \.\.\./ 
 endfunction
 
